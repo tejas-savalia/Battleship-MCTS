@@ -1,0 +1,82 @@
+import random
+from Generator import *
+from Supporter import *
+from copy import deepcopy
+#depth = 2
+gamma = 0.9
+epsilon = 0.01
+alpha = 0.09
+b = list()
+a = list()
+countRollout = 0
+#selects and action 
+def Select(board):
+    firstTurn = True
+    consideredActions = list()
+    values = list()
+    board1 = deepcopy(board)
+    for _ in range(100):
+        print (_)
+        board = deepcopy(board1)
+        valueForActions = Simulate(board)
+        #print ('action and value returned by simulate')
+        #print (valueForActions)
+        if firstTurn:
+            finalList = deepcopy(valueForActions)
+            firstTurn = False
+        for i in range(len(valueForActions)):
+            average = 0.9 * finalList[i][1] + 0.1*valueForActions[i][1]
+            finalList[i] = valueForActions[i][0], average
+        print ('Final List after averaging')
+        print (finalList)        
+        
+    
+    for a in finalList:
+        #print ('values in finalList')
+        #print (a)
+        values.append(a[1])
+    #print (values)
+    selectAction = finalList[values.index(max(values))]
+    
+    return selectAction
+
+#returns values for all possible actions after simulating the board from the current state
+def Simulate(board):
+    valueForActions = list()
+    legalActions = get_legal_actions(board)
+    current_board = deepcopy(board)
+    #print('current board original')
+    #print (current_board)
+    for a in legalActions:
+        (board, reward) = G(board, a)
+        countRollout = 0
+        value = Rollout(board, 0)
+        board=deepcopy(current_board)
+        valueForActions = valueForActions + [(a, value)]
+        
+
+    
+    action, maxValue = find_max_action_value(valueForActions)    
+    return valueForActions
+
+#Typical rollout procedure on a monte carlo tree search
+def Rollout(board, depth):
+    countRollout = 0
+    if gamma ** depth < epsilon:
+        return 0
+    legal_actions = []
+    legal_actions = get_legal_actions(board)
+    for i,k in enumerate(board):
+        for j, l in enumerate(board):
+            if board[i][j] == 2:
+                countRollout = countRollout + 1
+                if countRollout > 1:
+                    return 100
+
+    a = random.choice(legal_actions)
+    (board, reward) = G(board, a)
+    if reward == 100:
+        return reward
+    else:
+        return reward + gamma*Rollout(board, depth + 1)
+    

@@ -1,0 +1,88 @@
+#Black box generator for the next state
+from Supporter import *
+import random
+def G(board, action):
+    #estimate ship position given the current board
+    ship_pos = get_possible_ship_pos(board)
+    count = 0
+    
+    if action in ship_pos:
+        reward = 10
+        board[action[0]][action[1]] = 2
+    else:
+        reward = 1
+        board[action[0]][action[1]] = 1
+    for i,k in enumerate(board):
+        for j, l in enumerate(board):
+            if board[i][j] == 2:
+                count = count + 1
+                if count == 2:
+                    reward = 100
+    return(board, reward)
+
+def get_possible_ship_pos(board):
+    positions = []
+    positionsHit = []
+    possibleActions = get_legal_actions(board)
+    for i, k in enumerate(board):
+        for j, l in enumerate(k):
+            if board[i][j] == 2:
+                if random.random() < 0.5:
+                    print('Column check')
+                    b = (i, j+1)
+                    if b in get_legal_actions(board):
+                        positionsHit = positionsHit + [(i, j), b]
+                    else:
+                        print ('Column right check failed, select column left')
+                        positionsHit = positionsHit + [(i, j-1), (i, j)]
+                    return positionsHit
+                elif random.random() < 0.5:
+                    print('Column left check')
+                    b = (i, j-1)
+                    if b in get_legal_actions(board):
+                        positionsHit = positionsHit + [b, (i, j)]
+                        
+                    else:
+                        print('Column left check failed, select column right')
+                        positionsHit = positionsHit + [(i, j), (i, j+1)]
+                    return positionsHit
+                elif random.random() < 0.75:
+                    print("Row above check")
+                    b = (i-1, j)
+                    if b in get_legal_actions(board):
+                        positionsHit = positionsHit + [(i, j), b]
+                    else:
+                        print ("Row above check failed, select row below")
+                        positionsHit = positionsHit + [(i, j), (i+1, j)]
+                    return positionsHit
+                else:
+                    print("Row below check")
+                    b = (i+1, j)
+                    if b in get_legal_actions(board):
+                        positionsHit = positionsHit + [(i, j), b]
+                    else:
+                        print("Row below check failed, chose row above")
+                        positionsHit = positionsHit + [(i-1, j), (i, j)]
+                    return positionsHit
+                    
+                    
+            else:
+                
+                #print (possibleActions)
+                for a in possibleActions:
+                    p, q = a
+                    #print (a)
+                    b = p, q+1
+                    if b in possibleActions:
+                        positions = positions + [(a, b)]
+                
+    return random.choice(positions)
+
+'''
+#board = [[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 2, 0], [0, 0, 0, 0]]
+board = [[1, 0, 0, 1, 0], [1, 0, 1, 1, 0], [0, 0, 1, 2, 0], [1, 1, 1, 1, 0]]
+#board = [[1, 0, 1, 0], [1, 0, 1, 0], [1, 0, 0, 0], [1, 1, 0, 1]]
+A = get_possible_ship_pos(board)
+#A = G(board, (2, 0))
+print (A)
+'''
